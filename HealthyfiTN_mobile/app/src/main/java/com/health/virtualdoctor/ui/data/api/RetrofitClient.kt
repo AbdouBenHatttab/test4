@@ -14,23 +14,25 @@ object RetrofitClient {
     // ✅ URLs des deux services
     private const val AUTH_BASE_URL = "https://stores-faq-looks-burner.trycloudflare.com" // Port 8082
     private const val DOCTOR_BASE_URL = "https://viking-game-dale-player.trycloudflare.com" // Port 8083
+    private const val USER_BASE_URL = "https://YOUR_USER_SERVICE_URL.trycloudflare.com/" // Port 8085 - REPLACE THIS
 
     private var authRetrofit: Retrofit? = null
     private var doctorRetrofit: Retrofit? = null
+    private var userRetrofit: Retrofit? = null
 
     private var authApiService: ApiService? = null
     private var doctorApiService: ApiService? = null
+    private var userApiService: ApiService? = null
 
     private var appContext: Context? = null
 
-    // ✅ Fonction init() pour la compatibilité avec HealthApp
+    // ✅ Init function for compatibility
     fun init(context: Context) {
         appContext = context.applicationContext
-        // Pre-initialize services if needed
         getAuthService(appContext!!)
     }
 
-    // ✅ Service pour Auth (port 8082)
+    // ✅ AUTH Service (port 8082)
     fun getAuthService(context: Context): ApiService {
         if (authApiService == null) {
             authRetrofit = createRetrofit(AUTH_BASE_URL, context)
@@ -39,7 +41,7 @@ object RetrofitClient {
         return authApiService!!
     }
 
-    // ✅ Service pour Doctor (port 8083)
+    // ✅ DOCTOR Service (port 8083)
     fun getDoctorService(context: Context): ApiService {
         if (doctorApiService == null) {
             doctorRetrofit = createRetrofit(DOCTOR_BASE_URL, context)
@@ -48,8 +50,17 @@ object RetrofitClient {
         return doctorApiService!!
     }
 
-    // ✅ Service par défaut (pour compatibilité avec ancien code)
-    @Deprecated("Use getAuthService() or getDoctorService() instead")
+    // ✅ USER Service (port 8085)
+    fun getUserService(context: Context): ApiService {
+        if (userApiService == null) {
+            userRetrofit = createRetrofit(USER_BASE_URL, context)
+            userApiService = userRetrofit!!.create(ApiService::class.java)
+        }
+        return userApiService!!
+    }
+
+    // ✅ Default service (for backward compatibility)
+    @Deprecated("Use getAuthService(), getDoctorService(), or getUserService() instead")
     fun getApiService(context: Context): ApiService {
         return getAuthService(context)
     }
@@ -78,5 +89,5 @@ object RetrofitClient {
 
     fun getAuthBaseUrl(): String = AUTH_BASE_URL
     fun getDoctorBaseUrl(): String = DOCTOR_BASE_URL
-
+    fun getUserBaseUrl(): String = USER_BASE_URL
 }

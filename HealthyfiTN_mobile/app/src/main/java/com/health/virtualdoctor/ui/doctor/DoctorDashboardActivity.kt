@@ -1,283 +1,226 @@
 package com.health.virtualdoctor.ui.doctor
 
-import android.app.Dialog
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuItem
-import android.view.View
-import android.view.Window
-import android.widget.ImageView
-import android.widget.LinearLayout
+import android.util.Log
+import android.widget.Button
+import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.appbar.MaterialToolbar
-import com.google.android.material.button.MaterialButton
-import com.google.android.material.chip.Chip
-import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-import com.google.android.material.textfield.TextInputEditText
+import androidx.lifecycle.lifecycleScope
 import com.health.virtualdoctor.R
+import com.health.virtualdoctor.ui.data.api.RetrofitClient
+import com.health.virtualdoctor.ui.data.models.UpdateDoctorProfileRequest
+import com.health.virtualdoctor.ui.utils.TokenManager
+import kotlinx.coroutines.launch
 
 class DoctorDashboardActivity : AppCompatActivity() {
 
-    private lateinit var toolbar: MaterialToolbar
-    private lateinit var ivDoctorProfile: ImageView
-    private lateinit var tvDoctorName: TextView
-    private lateinit var tvSpecialization: TextView
-    private lateinit var tvRating: TextView
-    private lateinit var btnEditProfile: MaterialButton
-    private lateinit var tvTodayAppointments: TextView
-    private lateinit var tvTotalPatients: TextView
-    private lateinit var tvRevenue: TextView
-    private lateinit var chipFilter: Chip
-    private lateinit var rvAppointments: RecyclerView
-    private lateinit var llEmptyState: LinearLayout
-    private lateinit var fabNewAppointment: ExtendedFloatingActionButton
+    private lateinit var tokenManager: TokenManager
 
-    private lateinit var appointmentsAdapter: AppointmentsAdapter
-    private val appointmentsList = mutableListOf<Appointment>()
+    // Views
+    private lateinit var tvDoctorName: TextView
+    private lateinit var tvDoctorEmail: TextView
+    private lateinit var tvActivationStatus: TextView
+    private lateinit var etFirstName: EditText
+    private lateinit var etLastName: EditText
+    private lateinit var etPhoneNumber: EditText
+    private lateinit var etSpecialization: EditText
+    private lateinit var etHospital: EditText
+    private lateinit var etYearsOfExperience: EditText
+    private lateinit var etOfficeAddress: EditText
+    private lateinit var etConsultationHours: EditText
+    private lateinit var btnUpdateProfile: Button
+    private lateinit var btnCheckActivation: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_doctor_dashboard)
 
-        window.statusBarColor = resources.getColor(R.color.white, theme)
+        tokenManager = TokenManager(this)
 
         initViews()
-        setupToolbar()
         setupListeners()
-        loadDoctorData()
-        loadAppointments()
+        loadDoctorProfile()
     }
 
     private fun initViews() {
-        toolbar = findViewById(R.id.toolbar)
-        ivDoctorProfile = findViewById(R.id.ivDoctorProfile)
         tvDoctorName = findViewById(R.id.tvDoctorName)
-        tvSpecialization = findViewById(R.id.tvSpecialization)
-        tvRating = findViewById(R.id.tvRating)
-        btnEditProfile = findViewById(R.id.btnEditProfile)
-        tvTodayAppointments = findViewById(R.id.tvTodayAppointments)
-        tvTotalPatients = findViewById(R.id.tvTotalPatients)
-        tvRevenue = findViewById(R.id.tvRevenue)
-        chipFilter = findViewById(R.id.chipFilter)
-        rvAppointments = findViewById(R.id.rvAppointments)
-        llEmptyState = findViewById(R.id.llEmptyState)
-        fabNewAppointment = findViewById(R.id.fabNewAppointment)
-
-        // Setup RecyclerView
-        appointmentsAdapter = AppointmentsAdapter(appointmentsList) { appointment, action ->
-            handleAppointmentAction(appointment, action)
-        }
-        rvAppointments.layoutManager = LinearLayoutManager(this)
-        rvAppointments.adapter = appointmentsAdapter
-    }
-
-    private fun setupToolbar() {
-        setSupportActionBar(toolbar)
-        supportActionBar?.setDisplayShowTitleEnabled(true)
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.menu_doctor_dashboard, menu)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.action_notifications -> {
-                Toast.makeText(this, "Notifications", Toast.LENGTH_SHORT).show()
-                true
-            }
-            R.id.action_settings -> {
-                Toast.makeText(this, "Paramètres", Toast.LENGTH_SHORT).show()
-                true
-            }
-            R.id.action_logout -> {
-                Toast.makeText(this, "Déconnexion", Toast.LENGTH_SHORT).show()
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
-        }
+        tvDoctorEmail = findViewById(R.id.tvDoctorEmail)
+        tvActivationStatus = findViewById(R.id.tvActivationStatus)
+        etFirstName = findViewById(R.id.etFirstName)
+        etLastName = findViewById(R.id.etLastName)
+        etPhoneNumber = findViewById(R.id.etPhoneNumber)
+        etSpecialization = findViewById(R.id.etSpecialization)
+        etHospital = findViewById(R.id.etHospital)
+        etYearsOfExperience = findViewById(R.id.etYearsOfExperience)
+        etOfficeAddress = findViewById(R.id.etOfficeAddress)
+        etConsultationHours = findViewById(R.id.etConsultationHours)
+        btnUpdateProfile = findViewById(R.id.btnUpdateProfile)
+        btnCheckActivation = findViewById(R.id.btnCheckActivation)
     }
 
     private fun setupListeners() {
-        btnEditProfile.setOnClickListener {
-            showEditProfileDialog()
+        btnUpdateProfile.setOnClickListener {
+            updateDoctorProfile()
         }
 
-        chipFilter.setOnClickListener {
-            Toast.makeText(this, "Filtrer les consultations", Toast.LENGTH_SHORT).show()
-        }
-
-        fabNewAppointment.setOnClickListener {
-            Toast.makeText(this, "Nouvelle consultation", Toast.LENGTH_SHORT).show()
+        btnCheckActivation.setOnClickListener {
+            checkActivationStatus()
         }
     }
 
-    private fun loadDoctorData() {
-        // Simuler le chargement des données du médecin
-        tvDoctorName.text = "Dr. Jean Dupont"
-        tvSpecialization.text = "Cardiologue"
-        tvRating.text = "4.8 (120 avis)"
-        tvTodayAppointments.text = "8"
-        tvTotalPatients.text = "142"
-        tvRevenue.text = "12.5K"
+    private fun loadDoctorProfile() {
+        lifecycleScope.launch {
+            try {
+                val token = "Bearer ${tokenManager.getAccessToken()}"
+
+                // ✅ Call DOCTOR SERVICE (port 8083)
+                val response = RetrofitClient.getDoctorService(this@DoctorDashboardActivity)
+                    .getDoctorProfile(token)
+
+                if (response.isSuccessful && response.body() != null) {
+                    val profile = response.body()!!
+
+                    // Display profile info
+                    tvDoctorName.text = profile.fullName
+                    tvDoctorEmail.text = profile.email
+                    tvActivationStatus.text = if (profile.isActivated) {
+                        "✅ Activated"
+                    } else {
+                        "⏳ Pending Activation"
+                    }
+
+                    // Pre-fill edit fields
+                    etFirstName.setText(profile.firstName)
+                    etLastName.setText(profile.lastName)
+                    etPhoneNumber.setText(profile.phoneNumber ?: "")
+                    etSpecialization.setText(profile.specialization)
+                    etHospital.setText(profile.hospitalAffiliation)
+                    etYearsOfExperience.setText(profile.yearsOfExperience.toString())
+                    etOfficeAddress.setText(profile.officeAddress ?: "")
+                    etConsultationHours.setText(profile.consultationHours ?: "")
+
+                    Log.d("DoctorProfile", "✅ Profile loaded: ${profile.email}")
+                } else {
+                    val error = response.errorBody()?.string() ?: "Error loading profile"
+                    Toast.makeText(this@DoctorDashboardActivity, "❌ $error", Toast.LENGTH_LONG).show()
+                }
+
+            } catch (e: Exception) {
+                Log.e("DoctorProfile", "❌ Exception: ${e.message}", e)
+                Toast.makeText(
+                    this@DoctorDashboardActivity,
+                    "❌ Error: ${e.message}",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
     }
 
-    private fun loadAppointments() {
-        // Simuler le chargement des consultations
-        appointmentsList.clear()
-        appointmentsList.addAll(
-            listOf(
-                Appointment(
-                    id = "1",
-                    patientName = "Alice Martin",
-                    patientAge = "32 ans • Femme",
-                    time = "14:30",
-                    date = "05 Nov 2025",
-                    reason = "Consultation de suivi",
-                    status = "En ligne",
-                    statusColor = "#E8F5E9",
-                    statusTextColor = "#2E7D32"
-                ),
-                Appointment(
-                    id = "2",
-                    patientName = "Marc Dubois",
-                    patientAge = "45 ans • Homme",
-                    time = "15:00",
-                    date = "05 Nov 2025",
-                    reason = "Contrôle cardiaque",
-                    status = "Présentiel",
-                    statusColor = "#E3F2FD",
-                    statusTextColor = "#1976D2"
-                ),
-                Appointment(
-                    id = "3",
-                    patientName = "Sophie Laurent",
-                    patientAge = "28 ans • Femme",
-                    time = "16:00",
-                    date = "05 Nov 2025",
-                    reason = "Première consultation",
-                    status = "En ligne",
-                    statusColor = "#E8F5E9",
-                    statusTextColor = "#2E7D32"
-                ),
-                Appointment(
-                    id = "4",
-                    patientName = "Pierre Bernard",
-                    patientAge = "55 ans • Homme",
-                    time = "16:30",
-                    date = "05 Nov 2025",
-                    reason = "Résultats d'examens",
-                    status = "Présentiel",
-                    statusColor = "#E3F2FD",
-                    statusTextColor = "#1976D2"
+    private fun updateDoctorProfile() {
+        val firstName = etFirstName.text.toString().trim()
+        val lastName = etLastName.text.toString().trim()
+        val phoneNumber = etPhoneNumber.text.toString().trim()
+        val specialization = etSpecialization.text.toString().trim()
+        val hospital = etHospital.text.toString().trim()
+        val yearsOfExperience = etYearsOfExperience.text.toString().trim().toIntOrNull()
+        val officeAddress = etOfficeAddress.text.toString().trim()
+        val consultationHours = etConsultationHours.text.toString().trim()
+
+        if (firstName.isEmpty() || lastName.isEmpty() || specialization.isEmpty()) {
+            Toast.makeText(this, "⚠️ Required fields are missing", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        lifecycleScope.launch {
+            try {
+                btnUpdateProfile.isEnabled = false
+                btnUpdateProfile.text = "Updating..."
+
+                val token = "Bearer ${tokenManager.getAccessToken()}"
+                val request = UpdateDoctorProfileRequest(
+                    firstName = firstName,
+                    lastName = lastName,
+                    phoneNumber = phoneNumber.ifEmpty { null },
+                    specialization = specialization,
+                    hospitalAffiliation = hospital,
+                    yearsOfExperience = yearsOfExperience,
+                    officeAddress = officeAddress.ifEmpty { null },
+                    consultationHours = consultationHours.ifEmpty { null }
                 )
-            )
-        )
 
-        appointmentsAdapter.notifyDataSetChanged()
-        updateEmptyState()
-    }
+                // ✅ Call DOCTOR SERVICE (port 8083)
+                val response = RetrofitClient.getDoctorService(this@DoctorDashboardActivity)
+                    .updateDoctorProfile(token, request)
 
-    private fun updateEmptyState() {
-        if (appointmentsList.isEmpty()) {
-            llEmptyState.visibility = View.VISIBLE
-            rvAppointments.visibility = View.GONE
-        } else {
-            llEmptyState.visibility = View.GONE
-            rvAppointments.visibility = View.VISIBLE
+                if (response.isSuccessful && response.body() != null) {
+                    val updatedProfile = response.body()!!
+
+                    tvDoctorName.text = updatedProfile.fullName
+
+                    Toast.makeText(
+                        this@DoctorDashboardActivity,
+                        "✅ Profile updated successfully!",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    Log.d("DoctorProfile", "✅ Profile updated: ${updatedProfile.email}")
+                } else {
+                    val error = response.errorBody()?.string() ?: "Update failed"
+                    Toast.makeText(this@DoctorDashboardActivity, "❌ $error", Toast.LENGTH_LONG).show()
+                }
+
+            } catch (e: Exception) {
+                Log.e("DoctorProfile", "❌ Exception: ${e.message}", e)
+                Toast.makeText(
+                    this@DoctorDashboardActivity,
+                    "❌ Error: ${e.message}",
+                    Toast.LENGTH_LONG
+                ).show()
+            } finally {
+                btnUpdateProfile.isEnabled = true
+                btnUpdateProfile.text = "Update Profile"
+            }
         }
     }
 
-    private fun handleAppointmentAction(appointment: Appointment, action: String) {
-        when (action) {
-            "view_details" -> {
+    private fun checkActivationStatus() {
+        lifecycleScope.launch {
+            try {
+                val token = "Bearer ${tokenManager.getAccessToken()}"
+
+                // ✅ Call DOCTOR SERVICE (port 8083)
+                val response = RetrofitClient.getDoctorService(this@DoctorDashboardActivity)
+                    .getDoctorActivationStatus(token)
+
+                if (response.isSuccessful && response.body() != null) {
+                    val status = response.body()!!
+                    val isActivated = status["isActivated"] as? Boolean ?: false
+                    val message = status["message"] as? String ?: "Unknown"
+
+                    tvActivationStatus.text = if (isActivated) {
+                        "✅ Activated"
+                    } else {
+                        "⏳ $message"
+                    }
+
+                    Toast.makeText(this@DoctorDashboardActivity, message, Toast.LENGTH_LONG).show()
+
+                    Log.d("DoctorProfile", "✅ Activation status: $isActivated")
+                } else {
+                    val error = response.errorBody()?.string() ?: "Failed to check status"
+                    Toast.makeText(this@DoctorDashboardActivity, "❌ $error", Toast.LENGTH_LONG).show()
+                }
+
+            } catch (e: Exception) {
+                Log.e("DoctorProfile", "❌ Exception: ${e.message}", e)
                 Toast.makeText(
-                    this,
-                    "Détails: ${appointment.patientName}",
-                    Toast.LENGTH_SHORT
+                    this@DoctorDashboardActivity,
+                    "❌ Error: ${e.message}",
+                    Toast.LENGTH_LONG
                 ).show()
             }
-            "start_consultation" -> {
-                Toast.makeText(
-                    this,
-                    "Démarrer consultation avec ${appointment.patientName}",
-                    Toast.LENGTH_SHORT
-                ).show()
-                // TODO: Démarrer la consultation vidéo
-            }
         }
-    }
-
-    private fun showEditProfileDialog() {
-        val dialog = Dialog(this)
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
-        dialog.setContentView(R.layout.dialog_edit_profile)
-        dialog.window?.setLayout(
-            (resources.displayMetrics.widthPixels * 0.95).toInt(),
-            android.view.ViewGroup.LayoutParams.WRAP_CONTENT
-        )
-
-        // Initialiser les vues du dialog
-        val etFirstName = dialog.findViewById<TextInputEditText>(R.id.etEditFirstName)
-        val etLastName = dialog.findViewById<TextInputEditText>(R.id.etEditLastName)
-        val etSpecialization = dialog.findViewById<TextInputEditText>(R.id.etEditSpecialization)
-        val etPhone = dialog.findViewById<TextInputEditText>(R.id.etEditPhone)
-        val etClinicName = dialog.findViewById<TextInputEditText>(R.id.etEditClinicName)
-        val etConsultationFee = dialog.findViewById<TextInputEditText>(R.id.etEditConsultationFee)
-        val etBio = dialog.findViewById<TextInputEditText>(R.id.etEditBio)
-        val btnChangePhoto = dialog.findViewById<MaterialButton>(R.id.btnChangePhoto)
-        val btnCancel = dialog.findViewById<MaterialButton>(R.id.btnCancel)
-        val btnSave = dialog.findViewById<MaterialButton>(R.id.btnSave)
-
-        // Pré-remplir avec les données actuelles
-        etFirstName.setText("Jean")
-        etLastName.setText("Dupont")
-        etSpecialization.setText("Cardiologue")
-        etPhone.setText("+216 20 123 456")
-        etClinicName.setText("Clinique du Cœur")
-        etConsultationFee.setText("80")
-        etBio.setText("Cardiologue expérimenté avec plus de 15 ans de pratique dans le domaine de la cardiologie interventionnelle.")
-
-        btnChangePhoto.setOnClickListener {
-            Toast.makeText(this, "Changer la photo", Toast.LENGTH_SHORT).show()
-            // TODO: Implémenter le sélecteur d'image
-        }
-
-        btnCancel.setOnClickListener {
-            dialog.dismiss()
-        }
-
-        btnSave.setOnClickListener {
-            // Sauvegarder les modifications
-            val firstName = etFirstName.text.toString()
-            val lastName = etLastName.text.toString()
-            val specialization = etSpecialization.text.toString()
-
-            tvDoctorName.text = "Dr. $firstName $lastName"
-            tvSpecialization.text = specialization
-
-            Toast.makeText(this, "Profil mis à jour", Toast.LENGTH_SHORT).show()
-            dialog.dismiss()
-        }
-
-        dialog.show()
     }
 }
-
-// Data class pour les consultations
-data class Appointment(
-    val id: String,
-    val patientName: String,
-    val patientAge: String,
-    val time: String,
-    val date: String,
-    val reason: String,
-    val status: String,
-    val statusColor: String,
-    val statusTextColor: String
-)

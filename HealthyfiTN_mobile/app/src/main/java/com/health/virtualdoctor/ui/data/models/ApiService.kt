@@ -5,6 +5,9 @@ import retrofit2.http.*
 
 interface ApiService {
 
+    // ==========================================
+    // AUTH SERVICE (port 8082)
+    // ==========================================
     @POST("api/v1/auth/register")
     suspend fun register(@Body request: RegisterRequest): Response<AuthResponse>
 
@@ -17,20 +20,96 @@ interface ApiService {
     @POST("api/v1/auth/logout")
     suspend fun logout(@Body refreshToken: String): Response<Unit>
 
+    // ==========================================
+    // USER SERVICE (port 8085)
+    // ==========================================
     @GET("api/v1/users/profile")
-    suspend fun getUserProfile(@Header("Authorization") token: String): Response<UserResponse>
-    //    // ✅ DOCTOR ACTIVATION SERVICE ENDPOINTS (port 8083)
-//    @POST("api/doctors/register")
-//    suspend fun registerDoctor(@Body request: DoctorRegisterRequest): Response<DoctorResponse>
-//
-//    @POST("api/doctors/login")
-//    suspend fun loginDoctor(@Body request: Map<String, String>): Response<Map<String, Any>>
-// ✅ DOCTOR SERVICE (port 8083)
+    suspend fun getUserProfile(
+        @Header("Authorization") token: String
+    ): Response<UserProfileResponse>
+
+    @PUT("api/v1/users/profile")
+    suspend fun updateUserProfile(
+        @Header("Authorization") token: String,
+        @Body request: UpdateUserProfileRequest
+    ): Response<UserProfileResponse>
+
+    @PUT("api/v1/users/change-password")
+    suspend fun changePassword(
+        @Header("Authorization") token: String,
+        @Body request: ChangePasswordRequest
+    ): Response<Unit>
+
+    // ==========================================
+    // DOCTOR SERVICE (port 8083)
+    // ==========================================
     @POST("api/doctors/register")
     suspend fun registerDoctor(@Body request: DoctorRegisterRequest): Response<DoctorResponse>
 
-    // ✅ FIX: Le backend attend un LoginRequest, pas Map<String, String>
     @POST("api/doctors/login")
     suspend fun loginDoctor(@Body request: LoginRequest): Response<Map<String, Any>>
 
+    @GET("api/doctors/profile")
+    suspend fun getDoctorProfile(
+        @Header("Authorization") token: String
+    ): Response<DoctorResponse>
+
+    @PUT("api/doctors/profile")
+    suspend fun updateDoctorProfile(
+        @Header("Authorization") token: String,
+        @Body request: UpdateDoctorProfileRequest
+    ): Response<DoctorResponse>
+
+    @GET("api/doctors/activation-status")
+    suspend fun getDoctorActivationStatus(
+        @Header("Authorization") token: String
+    ): Response<Map<String, Any>>
+
+    @GET("api/doctors/debug/all-emails")
+    suspend fun getAllDoctorEmails(
+        @Header("Authorization") token: String
+    ): Response<Map<String, Any>>
 }
+
+// ==========================================
+// NEW DATA CLASSES
+// ==========================================
+
+// User Profile
+data class UserProfileResponse(
+    val id: String,
+    val email: String,
+    val firstName: String,
+    val lastName: String,
+    val fullName: String,
+    val phoneNumber: String?,
+    val profilePictureUrl: String?,
+    val roles: Set<String>,
+    val isActivated: Boolean,
+    val createdAt: String
+)
+
+data class UpdateUserProfileRequest(
+    val firstName: String?,
+    val lastName: String?,
+    val phoneNumber: String?,
+    val email: String?,
+    val profilePictureUrl: String?
+)
+
+data class ChangePasswordRequest(
+    val currentPassword: String,
+    val newPassword: String
+)
+
+// Doctor Profile
+data class UpdateDoctorProfileRequest(
+    val firstName: String?,
+    val lastName: String?,
+    val phoneNumber: String?,
+    val specialization: String?,
+    val hospitalAffiliation: String?,
+    val yearsOfExperience: Int?,
+    val officeAddress: String?,
+    val consultationHours: String?
+)
