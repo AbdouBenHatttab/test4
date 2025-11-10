@@ -12,6 +12,7 @@ D:\healthSyncMobile-main\healthserver\user-service\src\main\java\com\healthapp\u
 D:\healthSyncMobile-main\healthserver\user-service\src\main\java\com\healthapp\user\dto\response\PageResponse.java
 D:\healthSyncMobile-main\healthserver\user-service\src\main\java\com\healthapp\user\Enums\AccountStatus.java
 D:\healthSyncMobile-main\healthserver\user-service\src\main\java\com\healthapp\user\service\UserService.java
+D:\healthSyncMobile-main\healthserver\user-service\src\main\java\com\healthapp\user\service\PasswordResetService.java
 D:\healthSyncMobile-main\healthserver\user-service\src\main\java\com\healthapp\user\config\JwtConfig.java
 D:\healthSyncMobile-main\healthserver\user-service\src\main\java\com\healthapp\user\service\PasswordService.java
 D:\healthSyncMobile-main\healthserver\user-service\src\main\java\com\healthapp\user\controller\AdminController.java

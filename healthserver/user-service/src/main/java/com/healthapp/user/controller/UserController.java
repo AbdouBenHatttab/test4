@@ -58,6 +58,5 @@ public class UserController {
         passwordService.changePassword(principal.getId(), request);
         return ResponseEntity.ok(ApiResponse.success("Password changed", null));
     }
-  
 
 }

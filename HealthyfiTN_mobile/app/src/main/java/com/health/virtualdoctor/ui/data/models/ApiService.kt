@@ -1,3 +1,4 @@
+// Complete ApiService.kt with wrapper
 package com.health.virtualdoctor.ui.data.models
 
 import okhttp3.MultipartBody
@@ -23,26 +24,25 @@ interface ApiService {
     suspend fun logout(@Body refreshToken: String): Response<Unit>
 
     // ==========================================
-    // USER SERVICE (port 8085)
+    // USER SERVICE (port 8085) - WITH WRAPPER
     // ==========================================
     @GET("api/v1/users/profile")
     suspend fun getUserProfile(
         @Header("Authorization") token: String
-    ): Response<UserProfileResponse>
+    ): Response<ApiResponse<UserProfileResponse>>
 
     @PUT("api/v1/users/profile")
     suspend fun updateUserProfile(
         @Header("Authorization") token: String,
         @Body request: UpdateUserProfileRequest
-    ): Response<UserProfileResponse>
+    ): Response<ApiResponse<UserProfileResponse>>
 
     @PUT("api/v1/users/change-password")
     suspend fun changePassword(
         @Header("Authorization") token: String,
         @Body request: ChangePasswordRequest
-    ): Response<Unit>
+    ): Response<ApiResponse<String>>
 
-    // ✅ NOUVEAU: Forgot Password pour USER
     @POST("api/v1/users/forgot-password")
     suspend fun forgotUserPassword(
         @Body request: Map<String, String>
@@ -78,14 +78,12 @@ interface ApiService {
         @Header("Authorization") token: String
     ): Response<Map<String, Any>>
 
-    // ✅ NOUVEAU: Change Password pour DOCTOR
-    @POST("api/doctors/change-password")
+    @PUT("api/doctors/change-password")
     suspend fun changeDoctorPassword(
         @Header("Authorization") token: String,
         @Body request: ChangePasswordRequest
     ): Response<Map<String, Any>>
 
-    // ✅ NOUVEAU: Forgot Password pour DOCTOR
     @POST("api/doctors/forgot-password")
     suspend fun forgotDoctorPassword(
         @Body request: Map<String, String>
@@ -101,7 +99,7 @@ interface ApiService {
     ): Response<Map<String, String>>
 
     // ==========================================
-    // NUTRITION SERVICE (Cloudflare Worker)
+    // NUTRITION SERVICE
     // ==========================================
     @Multipart
     @POST("api/nutrition/analyze")
@@ -113,10 +111,19 @@ interface ApiService {
 }
 
 // ==========================================
+// WRAPPER FOR USER SERVICE RESPONSES
+// ==========================================
+data class ApiResponse<T>(
+    val success: Boolean,
+    val message: String?,
+    val data: T?
+)
+
+// ==========================================
 // DATA CLASSES
 // ==========================================
 
-// User Profile
+// User Profile (for profile endpoints)
 data class UserProfileResponse(
     val id: String,
     val email: String,

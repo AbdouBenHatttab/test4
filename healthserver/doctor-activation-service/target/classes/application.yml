@@ -16,6 +16,8 @@ spring:
 
 notification:
   admin-email: healthapp.healthyfittn@gmail.com
+  service:
+    url: http://localhost:8084
 
 server:
   port: 8083

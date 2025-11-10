@@ -70,13 +70,17 @@
                     android:padding="20dp"
                     android:gravity="center_horizontal">
 
-                    <!-- Avatar -->
+                    <!-- ✅ Avatar with profileImageCard ID -->
                     <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/profileImageCard"
                         android:layout_width="100dp"
                         android:layout_height="100dp"
+                        android:clickable="true"
+                        android:focusable="true"
                         app:cardCornerRadius="50dp"
                         app:strokeWidth="3dp"
-                        app:strokeColor="@color/primary">
+                        app:strokeColor="@color/primary"
+                        android:foreground="?attr/selectableItemBackground">
 
                         <ImageView
                             android:id="@+id/ivProfileImage"
@@ -86,6 +90,15 @@
                             android:scaleType="centerCrop"
                             android:contentDescription="Photo de profil" />
                     </com.google.android.material.card.MaterialCardView>
+
+                    <!-- ✅ Upload hint -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="📸 Cliquez pour changer"
+                        android:textSize="12sp"
+                        android:textColor="@color/text_secondary"
+                        android:layout_marginTop="8dp" />
 
                     <!-- User Name -->
                     <TextView

@@ -9,6 +9,7 @@ D:\healthSyncMobile-main\healthserver\doctor-activation-service\src\main\java\co
 D:\healthSyncMobile-main\healthserver\doctor-activation-service\src\main\java\com\healthapp\doctor\client\NotificationClient.java
 D:\healthSyncMobile-main\healthserver\doctor-activation-service\src\main\java\com\healthapp\doctor\repository\DoctorActivationRequestRepository.java
 D:\healthSyncMobile-main\healthserver\doctor-activation-service\src\main\java\com\healthapp\doctor\controller\DoctorController.java
+D:\healthSyncMobile-main\healthserver\doctor-activation-service\src\main\java\com\healthapp\doctor\service\DoctorPasswordResetService.java
 D:\healthSyncMobile-main\healthserver\doctor-activation-service\src\main\java\com\healthapp\doctor\DoctorActivationServiceApplication.java
 D:\healthSyncMobile-main\healthserver\doctor-activation-service\src\main\java\com\healthapp\doctor\dto\response\DoctorDashboardResponse.java
 D:\healthSyncMobile-main\healthserver\doctor-activation-service\src\main\java\com\healthapp\doctor\dto\request\ChangePasswordRequest.java

@@ -165,6 +165,8 @@ public class JwtTokenValidator extends OncePerRequestFilter {
         boolean skip = path.startsWith("/api/doctors/register") ||
                path.startsWith("/api/doctors/login") ||
                path.startsWith("/api/doctors/health") ||
+               path.startsWith("/api/doctors/forgot-password") ||
+               path.startsWith("/api/doctors/reset-password") ||
                path.startsWith("/actuator");
         
         if (skip) {

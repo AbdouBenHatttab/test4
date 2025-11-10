@@ -4,6 +4,7 @@ import com.healthapp.doctor.dto.request.UpdateDoctorProfileRequest;
 import com.healthapp.doctor.dto.response.DoctorResponse;
 import com.healthapp.doctor.entity.Doctor;
 import com.healthapp.doctor.repository.DoctorRepository;
+import com.healthapp.doctor.service.DoctorPasswordResetService;
 import com.healthapp.doctor.service.DoctorPasswordService;
 import com.healthapp.doctor.dto.request.ChangePasswordRequest;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,8 @@ public class DoctorController {
     
     private final DoctorRepository doctorRepository;
     private final DoctorPasswordService doctorPasswordService;
-    
+    private final DoctorPasswordResetService passwordResetService;
+
     @PostConstruct
     public void init() {
         log.info("========================================");
@@ -199,50 +201,40 @@ public class DoctorController {
         }
     }
     
-    /**
-     * Forgot password
-     */
-    @PostMapping("/forgot-password")
-    public ResponseEntity<Map<String, Object>> forgotDoctorPassword(
-            @RequestBody Map<String, String> request) {
-        
-        String email = request.get("email");
-        if (email == null || email.isEmpty()) {
-            throw new RuntimeException("Email is required");
-        }
-        
-        Doctor doctor = doctorRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Doctor not found with email: " + email));
-        
-        log.info("📧 [FORGOT] Password reset requested for doctor: {}", email);
-        return ResponseEntity.ok(Map.of("success", true, "message", "Reset link sent to email"));
+ 
+/**
+ * Forgot password - FIXED VERSION
+ */
+@PostMapping("/forgot-password")
+public ResponseEntity<Map<String, Object>> forgotDoctorPassword(
+        @RequestBody Map<String, String> request) {
+    
+    String email = request.get("email");
+    if (email == null || email.isEmpty()) {
+        throw new RuntimeException("Email is required");
     }
     
-    /**
-     * Check activation status
-     */
-    @GetMapping("/activation-status")
-    @PreAuthorize("hasRole('DOCTOR')")
-    public ResponseEntity<Map<String, Object>> getActivationStatus(Authentication authentication) {
-        String email = authentication.getName();
-        log.info("📊 [STATUS] Checking activation status for: '{}'", email);
-        
-        Doctor doctor = doctorRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Doctor not found with email: " + email));
-        
-        String message = doctor.getIsActivated()
-                ? "Your account is activated and ready to use"
-                : "Your account is pending admin approval.";
+    log.info("🔐 Password reset requested for doctor: {}", email);
+    
+    try {
+        // ✅ Appeler le service pour envoyer l'email
+        passwordResetService.sendPasswordResetEmailForDoctor(email);
         
         return ResponseEntity.ok(Map.of(
-            "isActivated", doctor.getIsActivated(),
-            "activationStatus", doctor.getActivationStatus(),
-            "message", message,
-            "activationRequestDate", doctor.getActivationRequestDate(),
-            "activationDate", doctor.getActivationDate() != null ? doctor.getActivationDate() : "Not activated yet"
+            "success", true, 
+            "message", "Password reset email sent successfully"
+        ));
+        
+    } catch (Exception e) {
+        log.error("❌ Failed to send password reset email: {}", e.getMessage());
+        
+        // ⚠️ NE PAS révéler si l'email existe (sécurité)
+        return ResponseEntity.ok(Map.of(
+            "success", true,
+            "message", "If the email exists, a reset link will be sent"
         ));
     }
-    
+}
     /**
      * Map Doctor to DoctorResponse
      */

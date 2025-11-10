@@ -25,6 +25,9 @@ server:
   error:
     include-message: always
     include-binding-errors: always
+notification:
+  service:
+    url: http://localhost:8084
 
 app:
   jwt:

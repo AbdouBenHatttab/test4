@@ -40,8 +40,18 @@ public class DoctorAuthService {
      * Register a new doctor
      */
     public DoctorResponse registerDoctor(DoctorRegisterRequest request) {
-        log.info("🥼 Starting doctor registration for: {}", request.getEmail());
-        log.info("📧 Contact email: {}", request.getContactEmail());
+        log.info("========================================");
+        log.info("🥼 DOCTOR REGISTRATION START");
+        log.info("========================================");
+        log.info("📧 System Email (login): {}", request.getEmail());
+        log.info("📨 Contact Email (notifications): {}", request.getContactEmail());
+        log.info("========================================");
+        
+        // Validation initiale
+        if (request.getContactEmail() == null || request.getContactEmail().trim().isEmpty()) {
+            log.error("❌ CRITICAL: contactEmail is NULL or EMPTY in request!");
+            throw new RuntimeException("Contact email is required for doctor registration");
+        }
         
         // Check if doctor already exists
         if (doctorRepository.existsByEmail(request.getEmail())) {
@@ -53,24 +63,64 @@ public class DoctorAuthService {
         }
         
         try {
-            // Create doctor profile with contactEmail
-            log.info("Step 1: Creating doctor profile");
+            // ✅ STEP 1: Create doctor profile
+            log.info("📝 STEP 1: Creating doctor profile");
             Doctor doctor = createDoctorProfile(request);
+            
+            log.info("🔍 Doctor object BEFORE save:");
+            log.info("   - email: {}", doctor.getEmail());
+            log.info("   - contactEmail: {}", doctor.getContactEmail());
+            log.info("   - contactEmail is null? {}", doctor.getContactEmail() == null);
+            log.info("   - contactEmail is empty? {}", doctor.getContactEmail() != null && doctor.getContactEmail().isEmpty());
+            
+            // ✅ STEP 2: Save to MongoDB
+            log.info("💾 STEP 2: Saving to MongoDB");
             Doctor savedDoctor = doctorRepository.save(doctor);
             
-            // Create activation request
-            log.info("Step 2: Creating activation request");
+            log.info("✅ Doctor saved to MongoDB:");
+            log.info("   - ID: {}", savedDoctor.getId());
+            log.info("   - email: {}", savedDoctor.getEmail());
+            log.info("   - contactEmail: {}", savedDoctor.getContactEmail());
+            log.info("   - getNotificationEmail(): {}", savedDoctor.getNotificationEmail());
+            log.info("   - createdAt: {}", savedDoctor.getCreatedAt());
+            
+            // ✅ VERIFICATION: Re-fetch from DB to confirm
+            log.info("🔍 VERIFICATION: Re-fetching from database");
+            Doctor verifyDoctor = doctorRepository.findByEmail(savedDoctor.getEmail())
+                    .orElseThrow(() -> new RuntimeException("Doctor not found after save!"));
+            
+            log.info("✅ Doctor re-fetched from DB:");
+            log.info("   - contactEmail in DB: {}", verifyDoctor.getContactEmail());
+            log.info("   - Matches saved object? {}", 
+                    savedDoctor.getContactEmail().equals(verifyDoctor.getContactEmail()));
+            
+            // ✅ STEP 3: Create activation request
+            log.info("📋 STEP 3: Creating activation request");
             createActivationRequest(savedDoctor);
             
-            // ✅ Send email to CONTACT EMAIL (not system email)
-            log.info("Step 3: Sending pending validation email to: {}", savedDoctor.getNotificationEmail());
+            // ✅ STEP 4: Send email to DOCTOR
+            log.info("========================================");
+            log.info("📧 STEP 4: Sending email to DOCTOR");
+            log.info("========================================");
+            log.info("🎯 Target email: {}", savedDoctor.getNotificationEmail());
+            log.info("📝 Template: DOCTOR_REGISTRATION_PENDING");
+            log.info("========================================");
+            
             sendPendingValidationEmailToDoctor(savedDoctor);
             
-            // Notify admins
-            log.info("Step 4: Notifying admins at: {}", adminEmail);
+            // ✅ STEP 5: Send email to ADMIN
+            log.info("========================================");
+            log.info("📧 STEP 5: Sending email to ADMIN");
+            log.info("========================================");
+            log.info("🎯 Admin email: {}", adminEmail);
+            log.info("📝 Template: DOCTOR_REGISTRATION_ADMIN_NOTIFICATION");
+            log.info("========================================");
+            
             notifyAdmins(savedDoctor);
             
-            log.info("✅ Doctor registration completed for: {}", request.getEmail());
+            log.info("========================================");
+            log.info("✅ DOCTOR REGISTRATION COMPLETED");
+            log.info("========================================");
             
             return mapToDoctorResponse(savedDoctor);
             
@@ -79,7 +129,6 @@ public class DoctorAuthService {
             throw new RuntimeException("Failed to register doctor: " + e.getMessage(), e);
         }
     }
-    
     /**
      * Create doctor profile with contactEmail
      */
