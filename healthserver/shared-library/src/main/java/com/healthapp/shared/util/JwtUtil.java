@@ -135,7 +135,7 @@ public class JwtUtil {
      * @return Generated JWT token
      */
     public static String generateToken(Map<String, Object> claims, String subject, Long expirationMillis, String secret) {
-        //SecretKey key = getSigningKey(secret);
+        SecretKey key = getSigningKey(secret);
         Date now = new Date();
         Date expiry = new Date(now.getTime() + expirationMillis);
 
@@ -144,7 +144,7 @@ public class JwtUtil {
                 .subject(subject)
                 .issuedAt(now)
                 .expiration(expiry)
-                //.signWith(key, SignatureAlgorithm.HS256)
+                .signWith(key)
                 .compact();
     }
     

@@ -71,9 +71,12 @@ public class PatientAppointmentController {
             @RequestBody Map<String, String> body,
             Authentication auth) {
 
-        log.info("❌ Patient cancelling appointment: {}", appointmentId);
+        CustomUserPrincipal principal = (CustomUserPrincipal) auth.getPrincipal();
+
+        log.info("❌ Patient {} cancelling appointment: {}", principal.getEmail(), appointmentId);
 
         String reason = body.get("reason");
+
         appointmentService.cancelAppointment(appointmentId, "PATIENT", reason);
 
         return ResponseEntity.ok(ApiResponse.success("Appointment cancelled successfully", null));

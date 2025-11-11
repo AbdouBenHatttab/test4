@@ -10,7 +10,7 @@ import org.springframework.data.mongodb.config.EnableMongoAuditing;
 
 @SpringBootApplication
 @EnableDiscoveryClient
-@EnableFeignClients
+@EnableFeignClients(basePackages = "com.healthapp.user.client")
 @EnableMongoAuditing
 public class UserServiceApplication {
     

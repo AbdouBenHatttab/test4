@@ -66,7 +66,12 @@ public class AppointmentClientService {
         body.put("cancelledBy", cancelledBy);
         body.put("reason", reason);
 
-        doctorServiceClient.cancelAppointment(appointmentId, body);
+        try {
+            doctorServiceClient.cancelAppointment(appointmentId, body);
+        } catch (Exception e) {
+            log.error("Failed to cancel appointment {}: {}", appointmentId, e.getMessage(), e);
+            throw new RuntimeException("Failed to cancel appointment", e);
+        }
     }
 
     /**
