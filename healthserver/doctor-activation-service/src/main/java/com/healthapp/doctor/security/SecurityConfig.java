@@ -35,47 +35,44 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         log.info("🔒 Configuring Security Filter Chain...");
-        
+
         http
-            .csrf(AbstractHttpConfigurer::disable)
-            .authorizeHttpRequests(auth -> {
-                log.info("🔒 Configuring authorization rules:");
-                log.info("  - Public: /api/doctors/register, /api/doctors/login, /api/doctors/health, /api/doctors/forgot-password");
-                log.info("  - Public: /api/doctors/test, /api/doctors/debug/**");
-                log.info("  - Authenticated: PUT /api/doctors/change-password");
-                log.info("  - Authenticated: GET /api/doctors/profile");
-                log.info("  - Admin: /api/admin/**");
-                
-                auth
-                    // Public endpoints
-                    .requestMatchers(
-                        "/api/doctors/register",
-                        "/api/doctors/login", 
-                        "/api/doctors/health", 
-                        "/api/doctors/forgot-password",
-                        "/api/doctors/test",
-                        "/api/doctors/debug/**",
-                        "/actuator/**"
-                    ).permitAll()
-                    
-                    // Admin endpoints - MUST BE BEFORE authenticated()
-                    .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                    
-                    // Authenticated doctor endpoints
-                    .requestMatchers(HttpMethod.PUT, "/api/doctors/change-password").authenticated()
-                    .requestMatchers(HttpMethod.GET, "/api/doctors/profile").authenticated()
-                    .requestMatchers(HttpMethod.PUT, "/api/doctors/profile").authenticated()
-                    .requestMatchers(HttpMethod.GET, "/api/doctors/activation-status").authenticated()
-                    
-                    // All other requests
-                    .anyRequest().authenticated();
-            })
-            .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            )
-            .addFilterBefore(jwtTokenValidator, UsernamePasswordAuthenticationFilter.class);
-        
+                .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(auth -> {
+                    log.info("🔒 Configuring authorization rules");
+
+                    auth
+                            // Public endpoints - NO AUTHENTICATION
+                            .requestMatchers(
+                                    "/api/doctors/register",
+                                    "/api/doctors/login",
+                                    "/api/doctors/health",
+                                    "/api/doctors/forgot-password",
+                                    "/api/doctors/test",
+                                    "/api/doctors/debug/**",
+                                    "/api/doctors/available",                    // ✅ NEW
+                                    "/api/doctors/appointments/from-patient",    // ✅ NEW
+                                    "/api/doctors/appointments/patient/**",      // ✅ NEW
+                                    "/actuator/**"
+                            ).permitAll()
+
+                            // Admin endpoints
+                            .requestMatchers("/api/admin/**").hasRole("ADMIN")
+
+                            // Doctor endpoints - AUTHENTICATION REQUIRED
+                            .requestMatchers("/api/doctors/appointments/**").hasRole("DOCTOR")
+                            .requestMatchers(HttpMethod.PUT, "/api/doctors/change-password").authenticated()
+                            .requestMatchers(HttpMethod.GET, "/api/doctors/profile").authenticated()
+                            .requestMatchers(HttpMethod.PUT, "/api/doctors/profile").authenticated()
+
+                            // All other requests
+                            .anyRequest().authenticated();
+                })
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                .addFilterBefore(jwtTokenValidator, UsernamePasswordAuthenticationFilter.class);
+
         log.info("✅ Security Filter Chain configured successfully");
         return http.build();
-    }
-}
+    }}
