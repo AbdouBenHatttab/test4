@@ -19,6 +19,8 @@ import java.util.Map;
 /**
  * Doctor Appointment Controller
  * Handles all appointment-related operations for doctors
+ *
+ * NOTE: Public endpoints (for patients) are in PublicDoctorController
  */
 @RestController
 @RequestMapping("/api/doctors/appointments")
@@ -116,7 +118,7 @@ public class DoctorAppointmentController {
     }
 
     /**
-     * Cancel an appointment
+     * Cancel an appointment (Doctor side)
      */
     @PostMapping("/{appointmentId}/cancel")
     public ResponseEntity<Map<String, String>> cancelAppointment(
@@ -126,7 +128,8 @@ public class DoctorAppointmentController {
 
         log.info("❌ Cancelling appointment: {}", appointmentId);
 
-        String reason = body.get("reason");
+        String reason = (body != null) ? body.get("reason") : "No reason provided";
+
         appointmentService.cancelAppointment(appointmentId, "DOCTOR", reason);
 
         return ResponseEntity.ok(Map.of(

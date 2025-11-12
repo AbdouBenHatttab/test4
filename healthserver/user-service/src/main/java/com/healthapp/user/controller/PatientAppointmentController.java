@@ -77,7 +77,7 @@ public class PatientAppointmentController {
 
         String reason = body.get("reason");
 
-        appointmentService.cancelAppointment(appointmentId, "PATIENT", reason);
+        appointmentService.cancelAppointment(appointmentId,  reason);
 
         return ResponseEntity.ok(ApiResponse.success("Appointment cancelled successfully", null));
     }

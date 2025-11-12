@@ -167,7 +167,8 @@
                    path.startsWith("/api/doctors/health") ||
                    path.startsWith("/api/doctors/forgot-password") ||
                    path.startsWith("/api/doctors/reset-password") ||
-                   path.startsWith("/actuator");
+                    path.startsWith("/api/public/") ||
+                    path.startsWith("/actuator");
 
             if (skip) {
                 log.debug("⏭️ Skipping JWT validation for public path: {}", path);

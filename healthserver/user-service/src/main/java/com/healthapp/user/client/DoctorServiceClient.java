@@ -1,5 +1,6 @@
 package com.healthapp.user.client;
 
+import com.healthapp.user.dto.response.CancelAppointmentRequest;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,7 +13,8 @@ import java.util.Map;
  */
 @FeignClient(
         name = "doctor-activation-service",
-        url = "http://localhost:8083"
+        url = "http://localhost:8083",
+        configuration = com.healthapp.user.config.FeignClientConfig.class
 )
 public interface DoctorServiceClient {
 
@@ -23,15 +25,14 @@ public interface DoctorServiceClient {
     List<Map<String, Object>> getPatientAppointments(@PathVariable String patientId);
 
     /**
-     * ✅ CRITICAL: This endpoint is now PUBLIC in doctor-service
-     * Path: /api/doctors/appointments/{appointmentId}/cancel
-     * No authentication required
-     */
-    @PostMapping("/api/doctors/appointments/{appointmentId}/cancel")
-    void cancelAppointment(
-            @PathVariable String appointmentId,
-            @RequestBody Map<String, String> body
+        * Cancel an appointment for a patient
+        */
+    @PostMapping("/api/public/doctors/appointments/{appointmentId}/cancel")
+    Map<String, String> cancelAppointment(
+            @PathVariable("appointmentId") String appointmentId,
+            @RequestBody CancelAppointmentRequest request
     );
+
 
     @GetMapping("/api/doctors/available")
     List<Map<String, Object>> getActivatedDoctors();

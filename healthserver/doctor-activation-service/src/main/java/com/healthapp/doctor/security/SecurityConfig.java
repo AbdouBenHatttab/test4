@@ -53,7 +53,8 @@ public class SecurityConfig {
                                     "/api/doctors/available",                    // ✅ NEW
                                     "/api/doctors/appointments/from-patient",    // ✅ NEW
                                     "/api/doctors/appointments/patient/**",      // ✅ NEW
-                                    "/actuator/**"
+                                    "/actuator/**",
+                                    "/api/public/**"
                             ).permitAll()
 
                             // Admin endpoints

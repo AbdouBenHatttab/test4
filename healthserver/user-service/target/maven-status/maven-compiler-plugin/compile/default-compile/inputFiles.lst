@@ -11,6 +11,7 @@ C:\Users\abdou\Downloads\souha000\healthserver\user-service\src\main\java\com\he
 C:\Users\abdou\Downloads\souha000\healthserver\user-service\src\main\java\com\healthapp\user\Enums\AccountStatus.java
 C:\Users\abdou\Downloads\souha000\healthserver\user-service\src\main\java\com\healthapp\user\exception\UserNotFoundException.java
 C:\Users\abdou\Downloads\souha000\healthserver\user-service\src\main\java\com\healthapp\user\exception\GlobalExceptionHandler.java
+C:\Users\abdou\Downloads\souha000\healthserver\user-service\src\main\java\com\healthapp\user\config\FeignClientConfig.java
 C:\Users\abdou\Downloads\souha000\healthserver\user-service\src\main\java\com\healthapp\user\client\DoctorServiceClient.java
 C:\Users\abdou\Downloads\souha000\healthserver\user-service\src\main\java\com\healthapp\user\service\PasswordService.java
 C:\Users\abdou\Downloads\souha000\healthserver\user-service\src\main\java\com\healthapp\user\Enums\Gender.java
