@@ -81,6 +81,41 @@ interface ApiService {
     suspend fun getUserStatistics(
         @Header("Authorization") token: String
     ): Response<UserApiResponse<UserStatistics>>
+
+    /**
+     * Get all appointments for authenticated patient
+     */
+    @GET("api/v1/appointments")
+    suspend fun getPatientAppointments(
+        @Header("Authorization") token: String
+    ): Response<ApiResponse<List<AppointmentResponse>>>
+
+    /**
+     * Create new appointment
+     */
+    @POST("api/v1/appointments")
+    suspend fun createAppointment(
+        @Header("Authorization") token: String,
+        @Body request: Map<String, Any>
+    ): Response<ApiResponse<AppointmentResponse>>
+
+    /**
+     * Cancel appointment
+     */
+    @POST("api/v1/appointments/{appointmentId}/cancel")
+    suspend fun cancelAppointment(
+        @Header("Authorization") token: String,
+        @Path("appointmentId") appointmentId: String,
+        @Body request: Map<String, String>
+    ): Response<ApiResponse<String>>
+
+    /**
+     * Get available doctors for appointments
+     */
+    @GET("api/v1/appointments/doctors")
+    suspend fun getAvailableDoctors(
+        @Header("Authorization") token: String
+    ): Response<ApiResponse<List<Map<String, Any>>>>
     // ==========================================
     // DOCTOR SERVICE (port 8083)
     // ==========================================

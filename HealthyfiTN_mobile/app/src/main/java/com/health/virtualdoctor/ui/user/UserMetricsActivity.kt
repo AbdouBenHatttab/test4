@@ -16,6 +16,7 @@ import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.*
 import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
+import com.google.android.material.button.MaterialButton
 import com.health.virtualdoctor.ui.auth.LoginActivity
 import com.health.virtualdoctor.ui.consultation.ConsultationActivity
 import com.health.virtualdoctor.ui.meal.MealAnalysisActivity
@@ -64,6 +65,7 @@ class UserMetricsActivity : ComponentActivity() {
     private lateinit var tvHeight: android.widget.TextView
     private lateinit var dataSummaryContainer: android.widget.LinearLayout
     private lateinit var btnRefresh: android.widget.Button
+    private lateinit var btnAppointments: MaterialButton
 
 
     private val permissions = setOf(
@@ -115,9 +117,13 @@ class UserMetricsActivity : ComponentActivity() {
         tvHeight = findViewById(R.id.tvHeight)
         dataSummaryContainer = findViewById(R.id.dataSummaryContainer)
         btnRefresh = findViewById(R.id.btnRefresh)
+        btnAppointments = findViewById(R.id.btnAppointments)
 
         btnRefresh.setOnClickListener {
             checkPermissions()
+        }
+        btnAppointments.setOnClickListener {
+            navigateToAppointments()
         }
         // Initialiser les boutons
         cardAnalyze = findViewById(R.id.cardAnalyze)
@@ -385,6 +391,12 @@ class UserMetricsActivity : ComponentActivity() {
 
     private fun navigateToConsultation() {
         val intent = Intent(this, ConsultationActivity::class.java)
+        startActivity(intent)
+        overridePendingTransition(android.R.anim.slide_in_left, android.R.anim.slide_out_right)
+    }
+    
+    private fun navigateToAppointments() {
+        val intent = Intent(this, PatientAppointmentsActivity::class.java)
         startActivity(intent)
         overridePendingTransition(android.R.anim.slide_in_left, android.R.anim.slide_out_right)
     }
