@@ -115,7 +115,7 @@ interface ApiService {
     @GET("api/v1/appointments/doctors")
     suspend fun getAvailableDoctors(
         @Header("Authorization") token: String
-    ): Response<ApiResponse<List<Map<String, Any>>>>
+    ): Response<ApiResponse<List<DoctorAvailableResponse>>>
     // ==========================================
     // DOCTOR SERVICE (port 8083)
     // ==========================================
@@ -282,15 +282,15 @@ data class UserProfileResponse(
     val createdAt: String
 )
 
-data class PatientInfoResponse(
-    val id: String,
-    val email: String,
-    val firstName: String,
-    val lastName: String,
-    val fullName: String,
-    val phoneNumber: String?,
-    val profilePictureUrl: String?
-)
+//data class PatientInfoResponse(
+//    val id: String,
+//    val email: String,
+//    val firstName: String,
+//    val lastName: String,
+//    val fullName: String,
+//    val phoneNumber: String?,
+//    val profilePictureUrl: String?
+//)
 
 data class UpdateUserProfileRequest(
     val firstName: String?,

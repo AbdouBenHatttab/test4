@@ -26,12 +26,14 @@ import com.health.virtualdoctor.R
 import com.health.virtualdoctor.ui.data.api.RetrofitClient
 import com.health.virtualdoctor.ui.data.models.AppointmentRequest
 import com.health.virtualdoctor.ui.data.models.AppointmentResponse
+import com.health.virtualdoctor.ui.data.models.DoctorAvailableResponse
 import com.health.virtualdoctor.ui.utils.TokenManager
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Locale
+
 
 class   PatientAppointmentsActivity : AppCompatActivity() {
 
@@ -45,7 +47,8 @@ class   PatientAppointmentsActivity : AppCompatActivity() {
     private lateinit var appointmentsAdapter: PatientAppointmentsAdapter
 
     private var allAppointments = listOf<AppointmentResponse>()
-    private var availableDoctors = listOf<Map<String, Any>>()
+
+    private var availableDoctors = listOf<DoctorAvailableResponse>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -151,6 +154,7 @@ class   PatientAppointmentsActivity : AppCompatActivity() {
         }
     }
 
+
     private fun loadAvailableDoctors() {
         lifecycleScope.launch {
             try {
@@ -194,13 +198,39 @@ class   PatientAppointmentsActivity : AppCompatActivity() {
     private fun showAppointmentDetails(appointment: AppointmentResponse) {
         val detailsView = LayoutInflater.from(this).inflate(R.layout.dialog_appointment_details, null)
 
+        // ✅ Configure for PATIENT view - show doctor info, hide patient info
+        detailsView.findViewById<TextView>(R.id.tvDoctorNameDetails).visibility = View.VISIBLE
+        detailsView.findViewById<TextView>(R.id.tvPatientNameDialog).visibility = View.GONE
+        detailsView.findViewById<TextView>(R.id.lblPatientEmail)?.visibility = View.GONE
+        detailsView.findViewById<TextView>(R.id.tvPatientEmailDialog).visibility = View.GONE
+        detailsView.findViewById<TextView>(R.id.lblPatientPhone)?.visibility = View.GONE
+        detailsView.findViewById<TextView>(R.id.tvPatientPhoneDialog).visibility = View.GONE
+
+        // Show patient-specific views, hide doctor aliases
+        detailsView.findViewById<TextView>(R.id.tvAppointmentDateDetails).visibility = View.VISIBLE
+        detailsView.findViewById<TextView>(R.id.tvAppointmentDateDialog).visibility = View.GONE
+        detailsView.findViewById<TextView>(R.id.tvAppointmentTimeDetails).visibility = View.VISIBLE
+        detailsView.findViewById<TextView>(R.id.tvAppointmentTimeDialog).visibility = View.GONE
+        detailsView.findViewById<com.google.android.material.chip.Chip>(R.id.chipAppointmentTypeDetails).visibility = View.VISIBLE
+        detailsView.findViewById<TextView>(R.id.tvAppointmentTypeDialog).visibility = View.GONE
+        detailsView.findViewById<TextView>(R.id.tvAppointmentReasonDetails).visibility = View.VISIBLE
+        detailsView.findViewById<TextView>(R.id.tvReasonDialog).visibility = View.GONE
+        detailsView.findViewById<TextView>(R.id.tvAppointmentStatusDetails).visibility = View.VISIBLE
+        detailsView.findViewById<com.google.android.material.chip.Chip>(R.id.chipStatusDialog).visibility = View.GONE
+
+        // Hide doctor-only elements
+        detailsView.findViewById<View>(R.id.cardNotesDialog).visibility = View.GONE
+        detailsView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnCloseDialog).visibility = View.GONE
+
+        // ✅ Set appointment data
         detailsView.findViewById<TextView>(R.id.tvDoctorNameDetails).text = "Dr. ${appointment.doctorName}"
         detailsView.findViewById<TextView>(R.id.tvAppointmentDateDetails).text = formatDisplayDate(appointment.appointmentDateTime)
         detailsView.findViewById<TextView>(R.id.tvAppointmentTimeDetails).text = formatDisplayTime(appointment.appointmentDateTime)
         detailsView.findViewById<TextView>(R.id.tvAppointmentReasonDetails).text = appointment.reason
         detailsView.findViewById<TextView>(R.id.tvAppointmentStatusDetails).text = appointment.status
-        detailsView.findViewById<Chip>(R.id.chipAppointmentTypeDetails).text = appointment.appointmentType
+        detailsView.findViewById<com.google.android.material.chip.Chip>(R.id.chipAppointmentTypeDetails).text = appointment.appointmentType
 
+        // ✅ Use MaterialAlertDialogBuilder for consistent styling
         val dialog = MaterialAlertDialogBuilder(this)
             .setView(detailsView)
             .setPositiveButton("Fermer") { d, _ -> d.dismiss() }
@@ -271,14 +301,16 @@ class   PatientAppointmentsActivity : AppCompatActivity() {
         val etAppointmentTime = dialogView.findViewById<EditText>(R.id.etAppointmentTime)
         val etReasonForVisit = dialogView.findViewById<EditText>(R.id.etReasonForVisit)
 
-        // Doctor Spinner
-        val doctorNames = availableDoctors.map { "Dr. ${it["firstName"]} ${it["lastName"]}" }
+        // ✅ Fixed: Access data class properties directly
+        val doctorNames = availableDoctors.map { "Dr. ${it.firstName} ${it.lastName}" }
         val doctorAdapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, doctorNames)
         doctorSpinner.setAdapter(doctorAdapter)
 
         var selectedDoctorId: String? = null
         doctorSpinner.setOnItemClickListener { _, _, position, _ ->
-            selectedDoctorId = availableDoctors[position]["id"] as? String
+            // ✅ Access the id property directly from the data class
+            selectedDoctorId = availableDoctors[position].id
+            Log.d("PatientAppointments", "Selected doctor ID: $selectedDoctorId")
         }
 
         // Date Picker
@@ -327,11 +359,9 @@ class   PatientAppointmentsActivity : AppCompatActivity() {
             val request = AppointmentRequest(
                 doctorId = selectedDoctorId!!,
                 appointmentDateTime = appointmentDateTime,
-                reason = reason,
-                notes = "",
-                appointmentType = "VIDEO_CALL" // Or get from UI
+                reasonForVisit = reason,
+                appointmentType = "VIDEO_CALL"
             )
-
             createAppointment(request)
             dialog.dismiss()
         }
