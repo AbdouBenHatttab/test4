@@ -305,13 +305,6 @@ data class ChangePasswordRequest(
     val newPassword: String
 )
 
-data class AppointmentRequest(
-    val doctorId: String,
-    val appointmentDateTime: String,
-    val reason: String,
-    val notes: String,
-    val appointmentType: String
-)
 
 // Doctor Profile
 data class UpdateDoctorProfileRequest(

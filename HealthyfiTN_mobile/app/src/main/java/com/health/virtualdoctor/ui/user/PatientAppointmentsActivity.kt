@@ -33,7 +33,7 @@ import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Locale
 
-class PatientAppointmentsActivity : AppCompatActivity() {
+class   PatientAppointmentsActivity : AppCompatActivity() {
 
     private lateinit var tokenManager: TokenManager
     private lateinit var rvAppointments: RecyclerView
